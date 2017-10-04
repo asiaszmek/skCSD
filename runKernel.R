@@ -12,9 +12,10 @@ kernel_calculate <- function(simulation.location.name,
                              basis.reg.min=-5, #lambda min
                              basis.reg.max=-1, #lambda max
                              basis.reg.step=1, #lambda step
-                             basis.numb.g =  ) #Basis number
+                             basis.numb.g = 512 ) #Basis number
 {
     wherearewenow<-getwd()
+
     ##where to save the outputs
     where2save<-simulation.location.name
     dir.create(where2save)
@@ -28,7 +29,7 @@ kernel_calculate <- function(simulation.location.name,
         
     DirData<-where2save
     setwd(DirData)
-    
+
     ##reading in electrode coordinates
     
     elec.kord <- as.matrix(read.table("elcoord_x_y_z"))
