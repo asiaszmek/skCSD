@@ -7,7 +7,7 @@ electrodeDistribute<-c(Grid=1, Random=2, Hexagonal=3, Domi=4)
 ##which python code to ren
 LFPysim<-c(random=1, Y_symmetric=2, Mainen=3, Oscill = 4, Const=5 )
 
-LFPy_setup <- function(cellname,celltype,path,lfpysim,eledistribute,orientation,colnb,rownb,cellelectrodedist,xmin,xmax,ymin,ymax,ssNb,triside,sigma) {
+LFPy_setup <- function(cellname,celltype,path,lfpysim,eldistribute,orientation,colnb,rownb,cellelectrodedist,xmin,xmax,ymin,ymax,ssNb,triside,sigma) {
     
     
      
@@ -43,7 +43,7 @@ LFPy_setup <- function(cellname,celltype,path,lfpysim,eledistribute,orientation,
             eleccoords[,3]<-rep(cellelectrodedist,rownb*colnb)
         }
     }
-    if (eledistribute==2){
+    if (eldistribute==2){
         if (orientation==1){
             
             eleccoords[,2]<-runif(rownb*colnb,xmin,xmax)
@@ -62,7 +62,7 @@ LFPy_setup <- function(cellname,celltype,path,lfpysim,eledistribute,orientation,
         }
     }
     
-    if (eledistribute==3){
+    if (eldistribute==3){
         
         Xmin<-xmin
         Ymin<-ymin
@@ -102,7 +102,7 @@ LFPy_setup <- function(cellname,celltype,path,lfpysim,eledistribute,orientation,
     }
         
     
-    if (eledistribute==4){
+    if (eldistribute==4){
         eleccoords<-as.matrix(read.table(paste0(main.folder,'/simulation/ElcoordsDomi14.txt')))
     }
     if (celltype==1){
