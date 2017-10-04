@@ -1,87 +1,74 @@
-## library(gWidgetsRGtk2)
-## options(guiToolkit = "RGtk2")
-## require(gWidgets)
 
-## #install.packages("gWidgetsRGtk2", dep=TRUE)
-## library('scatterplot3d')
-## library("rgl")
-## #library('rglwidget')
-##setwd('skCSD')
+cellTypes <-c(Ballstick=1, Y_shaped=2,Morpho1=3, Agasbogas=4, Mainen=5,User_Defined=6, Gang_Simple=7, Domi=8)
+##electrode orientation
+##the chosen coordinate is parallel to the normal vector of the plane of the electrode grid, this will be the 'X', the other follows based on the rigth hand rule
+electrodeOrientation <-c(x=1, y=2, z=3)
+electrodeDistribute<-c(Grid=1, Random=2, Hexagonal=3, Domi=4)
+##which python code to ren
+LFPysim<-c(random=1, Y_symmetric=2, Mainen=3, Oscill = 4, Const=5 )
 
-LFPy_setup <- function(cellname,celltype,path,lfpysim,eledistribute,orientation,colnb,rownb,cellelectrodedist,xmin,xmax,ymin,ymax,ssNb,triside) {
+LFPy_setup <- function(cellname,celltype,path,lfpysim,eledistribute,orientation,colnb,rownb,cellelectrodedist,xmin,xmax,ymin,ymax,ssNb,triside,sigma) {
     
-    cellTypes <-c(Ballstick=1, Y_shaped=2,Morpho1=3, Agasbogas=4, Mainen=5,User_Defined=6, Gang_Simple=7, Domi=8)
-    ##electrode orientation
-    ##the chosen coordinate is parallel to the normal vector of the plane of the electrode grid, this will be the 'X', the other follows based on the rigth hand rule
-    electrodeOrientation <-c(x=1, y=2, z=3)
-    electrodeDistribute<-c(Grid=1, Random=2, Hexagonal=3, Domi=4)
-    ##which python code to ren
-    LFPysim<-c(random=1, Y_symmetric=2, Mainen=3, Oscill = 4, Const=5 )
-    sigma <- 0.3  
+    
+     
     defaultdir <- getwd()
     main.folder <- defaultdir
 ########################
     ##this is pre-set, but the value doesn't matter much
     ##defining the position of the grid
-    cell.electrode.dist<-cellelectrodedist
     TriSide<-triside
-    x.min<-xmin
-    x.max<-xmax
-    y.min<-ymin
-    y.max<-ymax
-    col.nb<-colnb #how many column in the grid
-    row.nb<-rownb #how many rows
+ 
     SetSeedNb<-ssNb
     set.seed(SetSeedNb)
     ##Creating the grid
-    elec.coords<-array(0,c(row.nb*col.nb,3))
-    elec.coords[,2]<-rep(seq(x.min,x.max,length.out=row.nb),col.nb)
-    elec.coords[,3]<-rep(seq(y.min,y.max,length.out=col.nb),each=row.nb)
-    elec.coords[,1]<-rep(cell.electrode.dist,row.nb*col.nb)
+    eleccoords<-array(0,c(rownb*colnb,3))
+    eleccoords[,2]<-rep(seq(xmin,xmax,length.out=rownb),colnb)
+    eleccoords[,3]<-rep(seq(ymin,ymax,length.out=colnb),each=rownb)
+    eleccoords[,1]<-rep(cellelectrodedist,rownb*colnb)
     
     if (eldistribute==1){
         if (orientation==1){
-            elec.coords[,2]<-rep(seq(x.min,x.max,length.out=row.nb),col.nb)
-            elec.coords[,3]<-rep(seq(y.min,y.max,length.out=col.nb),each=row.nb)
-            elec.coords[,1]<-rep(cell.electrode.dist,row.nb*col.nb)
+            eleccoords[,2]<-rep(seq(xmin,xmax,length.out=rownb),colnb)
+            eleccoords[,3]<-rep(seq(ymin,ymax,length.out=colnb),each=rownb)
+            eleccoords[,1]<-rep(cellelectrodedist,rownb*colnb)
         }
         if (orientation==2){
-            elec.coords[,3]<-rep(seq(x.min,x.max,length.out=row.nb),col.nb)
-            elec.coords[,1]<-rep(seq(y.min,y.max,length.out=col.nb),each=row.nb)
-            elec.coords[,2]<-rep(cell.electrode.dist,row.nb*col.nb)
+            eleccoords[,3]<-rep(seq(xmin,xmax,length.out=rownb),colnb)
+            eleccoords[,1]<-rep(seq(ymin,ymax,length.out=colnb),each=rownb)
+            eleccoords[,2]<-rep(cellelectrodedist,rownb*colnb)
         }
         if (electrodeOrientation[(orientation)]==3){
-            elec.coords[,1]<-rep(seq(x.min,x.max,length.out=row.nb),col.nb)
-            elec.coords[,2]<-rep(seq(y.min,y.max,length.out=col.nb),each=row.nb)
-            elec.coords[,3]<-rep(cell.electrode.dist,row.nb*col.nb)
+            eleccoords[,1]<-rep(seq(xmin,xmax,length.out=rownb),colnb)
+            eleccoords[,2]<-rep(seq(ymin,ymax,length.out=colnb),each=rownb)
+            eleccoords[,3]<-rep(cellelectrodedist,rownb*colnb)
         }
     }
     if (eledistribute==2){
         if (orientation==1){
             
-            elec.coords[,2]<-runif(row.nb*col.nb,x.min,x.max)
-            elec.coords[,3]<-runif(row.nb*col.nb,y.min,y.max)
-            elec.coords[,1]<-rep(cell.electrode.dist,row.nb*col.nb)
+            eleccoords[,2]<-runif(rownb*colnb,xmin,xmax)
+            eleccoords[,3]<-runif(rownb*colnb,ymin,ymax)
+            eleccoords[,1]<-rep(cellelectrodedist,rownb*colnb)
         }
         if (orientation==2){
-            elec.coords[,3]<-runif(row.nb*col.nb,x.min,x.max)
-            elec.coords[,1]<-runif(row.nb*col.nb,y.min,y.max)
-            elec.coords[,2]<-rep(cell.electrode.dist,row.nb*col.nb)
+            eleccoords[,3]<-runif(rownb*colnb,xmin,xmax)
+            eleccoords[,1]<-runif(rownb*colnb,ymin,ymax)
+            eleccoords[,2]<-rep(cellelectrodedist,rownb*colnb)
         }
         if (orientation==3){
-            elec.coords[,1]<-runif(row.nb*col.nb,x.min,x.max)
-            elec.coords[,2]<-runif(row.nb*col.nb,y.min,y.max)
-            elec.coords[,3]<-rep(cell.electrode.dist,row.nb*col.nb)
+            eleccoords[,1]<-runif(rownb*colnb,xmin,xmax)
+            eleccoords[,2]<-runif(rownb*colnb,ymin,ymax)
+            eleccoords[,3]<-rep(cellelectrodedist,rownb*colnb)
         }
     }
     
     if (eledistribute==3){
         
-        Xmin<-x.min
-        Ymin<-y.min
-        Zdist<-cell.electrode.dist #Cell to electrode Distance
-        ColNb<-col.nb#number of rows, Even numb
-        RowNb<-row.nb/2 #number of columns, Even numb
+        Xmin<-xmin
+        Ymin<-ymin
+        Zdist<-cellelectrodedist #Cell to electrode Distance
+        ColNb<-colnb#number of rows, Even numb
+        RowNb<-rownb/2 #number of columns, Even numb
         TriHeight<-TriSide*cos(pi/6)
         TriX1<-Xmin + TriSide*(1:(ColNb))-TriSide
         TriX2<-Xmin -TriSide/2 + TriSide*(1:(ColNb))
@@ -98,25 +85,25 @@ LFPy_setup <- function(cellname,celltype,path,lfpysim,eledistribute,orientation,
         
 
         if (orientation==1){
-            elec.coords[,2]<-Xcord
-            elec.coords[,3]<-Ycord
-            elec.coords[,1]<-rep(cell.electrode.dist,length(Xcord))
+            eleccoords[,2]<-Xcord
+            eleccoords[,3]<-Ycord
+            eleccoords[,1]<-rep(cellelectrodedist,length(Xcord))
         }
         if (orientation==2){
-            elec.coords[,3]<-Xcord
-            elec.coords[,1]<-Ycord
-            elec.coords[,2]<-rep(cell.electrode.dist,length(Xcord))
+            eleccoords[,3]<-Xcord
+            eleccoords[,1]<-Ycord
+            eleccoords[,2]<-rep(cellelectrodedist,length(Xcord))
             }
         if (orientation==3){
-            elec.coords[,1]<-Xcord
-            elec.coords[,2]<-Ycord
-            elec.coords[,3]<-rep(cell.electrode.dist,length(Xcord))
+            eleccoords[,1]<-Xcord
+            eleccoords[,2]<-Ycord
+            eleccoords[,3]<-rep(cellelectrodedist,length(Xcord))
         }
     }
         
     
     if (eledistribute==4){
-        elec.coords<-as.matrix(read.table(paste0(main.folder,'/simulation/ElcoordsDomi14.txt')))
+        eleccoords<-as.matrix(read.table(paste0(main.folder,'/simulation/ElcoordsDomi14.txt')))
     }
     if (celltype==1){
         morpho.location<-paste(main.folder,'/simulation/morphology/ballstick.swc',sep='')
@@ -179,48 +166,48 @@ LFPy_setup <- function(cellname,celltype,path,lfpysim,eledistribute,orientation,
     ##plot(alak[,3],alak[,4])
     alak<-as.matrix(read.table(morpho.location, comment.char="#"))
     ##cat(alak)
-    limx<-range(alak[,3],elec.coords[,1])
-    limy<-range(alak[,4],elec.coords[,2])
-    limz<-range(alak[,5],elec.coords[,3])
+    limx<-range(alak[,3],eleccoords[,1])
+    limy<-range(alak[,4],eleccoords[,2])
+    limz<-range(alak[,5],eleccoords[,3])
     ##plot(alak[,3],alak[,4])
     cat(paste('X range:', c(range(alak[,3]),'\n')),fill=TRUE)
     cat(paste('Y range:', c(range(alak[,4]),'\n')))
     cat(paste('Z range:', c(range(alak[,5]),'\n')))
     setupplot.name<-paste(simulation.location,'/',cell.name,'/setupplot.png',sep='')
-    png(setupplot.name)
-    sc<-scatterplot3d(alak[,3],alak[,4],alak[,5],pch=20,color='RED', xlim=limx, ylim=limy, zlim=limz,main='The cell and the electrode',xlab='x',ylab='y',zlab='z', scale.y=1)
-    sc$points3d(elec.coords[,1],elec.coords[,2],elec.coords[,3],col='BLACK',pch=15)
-    dev.off()
-    sc<-scatterplot3d(alak[,3],alak[,4],alak[,5],pch=20,color='RED', xlim=limx, ylim=limy, zlim=limz,main='The cell and the electrode',xlab='x',ylab='y',zlab='z', scale.y=1)
-    sc$points3d(elec.coords[,1],elec.coords[,2],elec.coords[,3],col='BLACK',pch=15)
+    ## png(setupplot.name)
+    ## sc<-scatterplot3d(alak[,3],alak[,4],alak[,5],pch=20,color='RED', xlim=limx, ylim=limy, zlim=limz,main='The cell and the electrode',xlab='x',ylab='y',zlab='z', scale.y=1)
+    ## sc$points3d(eleccoords[,1],eleccoords[,2],eleccoords[,3],col='BLACK',pch=15)
+    ## dev.off()
+    ## sc<-scatterplot3d(alak[,3],alak[,4],alak[,5],pch=20,color='RED', xlim=limx, ylim=limy, zlim=limz,main='The cell and the electrode',xlab='x',ylab='y',zlab='z', scale.y=1)
+    ## sc$points3d(eleccoords[,1],eleccoords[,2],eleccoords[,3],col='BLACK',pch=15)
     
-    plotrange<-range(c(limx, limy,limz))
-    plot3d(alak[,3],alak[,4],alak[,5],
-           col='RED',xlim=plotrange,
-           ylim=plotrange, zlim=plotrange,
-           aspect=TRUE, xlab="x (um)",
-           ylab="y (um)", "z (um)",
-           main="Simulational Setup")
-    plot3d(elec.coords[,1],elec.coords[,2],elec.coords[,3],col='BLACK',add=TRUE, size=10)
-    aspect3d(1,1,1)
+    ## plotrange<-range(c(limx, limy,limz))
+    ## plot3d(alak[,3],alak[,4],alak[,5],
+    ##        col='RED',xlim=plotrange,
+    ##        ylim=plotrange, zlim=plotrange,
+    ##        aspect=TRUE, xlab="x (um)",
+    ##        ylab="y (um)", "z (um)",
+    ##        main="Simulational Setup")
+    ## plot3d(eleccoords[,1],eleccoords[,2],eleccoords[,3],col='BLACK',add=TRUE, size=10)
+    ## aspect3d(1,1,1)
     
     
     elcoord.location.name<-paste(simulation.location,'/',cell.name,'/elcoord_x_y_z',sep='')
     
-    write.table(c(elec.coords),elcoord.location.name,col.names=FALSE, row.names=FALSE)
-    write.table(c(cell.electrode.dist, sigma),paste(simulation.location,'/',cell.name,'/elprop',sep=''),col.names=FALSE, row.names=FALSE)
+    write.table(c(eleccoords),elcoord.location.name,col.names=FALSE, row.names=FALSE)
+    write.table(c(cellelectrodedist, sigma),paste(simulation.location,'/',cell.name,'/elprop',sep=''),col.names=FALSE, row.names=FALSE)
     write.table(morpho.location,paste(simulation.location,'/',cell.name,'/morphology.txt',sep=''),col.names=FALSE, row.names=FALSE,quote=FALSE)
     write.table(active.location,paste(simulation.location,'/',cell.name,'/active.txt',sep=''),col.names=FALSE, row.names=FALSE,quote=FALSE)
     write.table(electrodeOrientation[orientation],paste(simulation.location,'/',cell.name,'/ElecOrient.txt',sep=''),col.names=FALSE, row.names=FALSE,quote=FALSE)
 ###########
     write.table(cell.name,paste(simulation.location,'/cellname',sep=''),col.names=FALSE, row.names=FALSE,quote=FALSE)
-    ##return(list(elec=elec.coords,alak))
+    ##return(list(elec=eleccoords,alak))
     cat(simName)
     return(list(simName1=simName,simulation.location=simulation.location,cellname=cellname,celltype=celltype))
 }
 
 
-LFPy_run<-function(cellname,celltype,path,lfpysim,eldistribute,orientation,colnb,rownb,cellelectrodedist=50,xmin=-200,xmax=600,ymin=-200,ymax=200,ssNb=123456,triside=19) {
+LFPy_run<-function(cellname,celltype,path,lfpysim,eldistribute,orientation,colnb,rownb,cellelectrodedist=50,xmin=-100,xmax=600,ymin=0,ymax=200,ssNb=123456,triside=19) {
     ##simulation.location<-paste(svalue(main.folder.n),svalue(simulation.location.name),sep="")
     ##running the LFP simulation
         
@@ -229,8 +216,9 @@ LFPy_run<-function(cellname,celltype,path,lfpysim,eldistribute,orientation,colnb
     
     ##checking runtime
     ##Rprof(paste(outputfilename,'/profile_LFPsim.out',sep=''))
+    sigma <-0.3
     main.folder.n <- getwd()
-    simName2Be <- LFPy_setup(cellname,celltype,path,lfpysim,eldistribute,orientation,colnb,rownb,cellelectrodedist,xmin,xmax,ymin,ymax,ssNb,triside)
+    simName2Be <- LFPy_setup(cellname,celltype,path,lfpysim,eldistribute,orientation,colnb,rownb,cellelectrodedist,xmin,xmax,ymin,ymax,ssNb,triside,sigma)
     simulation.location<-simName2Be$simulation.location
     cell.name.name <-cellname
     outputfilename<-paste(simulation.location,'/',cell.name.name,sep='')
@@ -290,7 +278,7 @@ LFPy_run<-function(cellname,celltype,path,lfpysim,eldistribute,orientation,colnb
     
     
     SummaryofSims<-paste0(simulation.location,"/SummaryofSimulations.txt")
-    What2Write2File<-paste(svalue(cell.name.name),svalue(chooseMethods),svalue( lfpysim),svalue(cellelectrodedist),svalue(orientation),svalue(xmin),svalue(xmax), svalue(ymin), svalue(ymax), svalue(colnb), svalue(rownb),sigma,  electrodeDistribute[svalue(eldistribute)],svalue(ssNb), "\n")
+    What2Write2File<-paste(cell.name.name, celltype, lfpysim, cellelectrodedist, orientation, xmin, xmax, ymin, ymax, colnb, rownb, sigma, eldistribute,ssNb, "\n")
     if(file.exists(SummaryofSims)==FALSE)
         file.create(SummaryofSims)
     cat(What2Write2File,file=SummaryofSims,append=TRUE)
@@ -301,15 +289,15 @@ LFPy_run<-function(cellname,celltype,path,lfpysim,eldistribute,orientation,colnb
     ##Rprof(NULL)
 }
 
-celltype <- 1
-path <- 'simulation'
-lfpysim <- 4
-eldistribute <- 1
-orientation <-2
-colnb <- 1
-rownb <-8
+## celltype <- 1
+## path <- 'simulation'
+## lfpysim <- 4
+## eldistribute <- 1
+## orientation <-2
+## colnb <- 1
+## rownb <-8
 
 
-cellname <- "BS_"
-startpath = getwd()
-LFPy_run(cellname,celltype,path,lfpysim,eldistribute,orientation,colnb,rownb,cellelectrodedist=50,xmin=-100,xmax=600,ymin=0,ymax=200,ssNb=123456,triside=19)
+## cellname <- "BS_"
+## startpath = getwd()
+## LFPy_run(cellname,celltype,path,lfpysim,eldistribute,orientation,colnb,rownb,cellelectrodedist=50,xmin=-100,xmax=600,ymin=0,ymax=200,ssNb=123456,triside=19)
