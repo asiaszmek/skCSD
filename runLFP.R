@@ -106,7 +106,7 @@ LFPy_setup <- function(cellname,celltype,path,lfpysim,eldistribute,orientation,c
         eleccoords<-as.matrix(read.table(paste0(main.folder,'/simulation/ElcoordsDomi14.txt')))
     }
     if (celltype==1){
-        morpho.location<-paste(main.folder,'/simulation/morphology/ballstick.swc',sep='')
+        morpho.location<-paste(main.folder,'/simulation/morphology/ballstick.hoc',sep='')
     }
     if (celltype==2){
         morpho.location<-paste(main.folder,'/simulation/morphology/villa.swc',sep='')
@@ -164,15 +164,15 @@ LFPy_setup <- function(cellname,celltype,path,lfpysim,eldistribute,orientation,c
     
     
     ##plot(alak[,3],alak[,4])
-    alak<-as.matrix(read.table(morpho.location, comment.char="#"))
+    #alak<-as.matrix(read.table(morpho.location, comment.char="#"))
     ##cat(alak)
-    limx<-range(alak[,3],eleccoords[,1])
-    limy<-range(alak[,4],eleccoords[,2])
-    limz<-range(alak[,5],eleccoords[,3])
+    #limx<-range(alak[,3],eleccoords[,1])
+    #limy<-range(alak[,4],eleccoords[,2])
+    #limz<-range(alak[,5],eleccoords[,3])
     ##plot(alak[,3],alak[,4])
-    cat(paste('X range:', c(range(alak[,3]),'\n')),fill=TRUE)
-    cat(paste('Y range:', c(range(alak[,4]),'\n')))
-    cat(paste('Z range:', c(range(alak[,5]),'\n')))
+    #cat(paste('X range:', c(range(alak[,3]),'\n')),fill=TRUE)
+    #cat(paste('Y range:', c(range(alak[,4]),'\n')))
+    #cat(paste('Z range:', c(range(alak[,5]),'\n')))
     setupplot.name<-paste(simulation.location,'/',cell.name,'/setupplot.png',sep='')
     ## png(setupplot.name)
     ## sc<-scatterplot3d(alak[,3],alak[,4],alak[,5],pch=20,color='RED', xlim=limx, ylim=limy, zlim=limz,main='The cell and the electrode',xlab='x',ylab='y',zlab='z', scale.y=1)
@@ -216,7 +216,7 @@ LFPy_run<-function(cellname,celltype,path,lfpysim,eldistribute,orientation,colnb
     
     ##checking runtime
     ##Rprof(paste(outputfilename,'/profile_LFPsim.out',sep=''))
-    sigma <-0.3
+    sigma <-0.5
     main.folder.n <- getwd()
     simName2Be <- LFPy_setup(cellname,celltype,path,lfpysim,eldistribute,orientation,colnb,rownb,cellelectrodedist,xmin,xmax,ymin,ymax,ssNb,triside,sigma)
     simulation.location<-simName2Be$simulation.location
