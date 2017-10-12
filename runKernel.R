@@ -1,7 +1,5 @@
-library('scatterplot3d')
 library('foreach')
 library('doMC')
-require(gWidgets)
 library('fields')
 library('MASS')
 
