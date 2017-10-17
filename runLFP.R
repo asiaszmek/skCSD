@@ -23,8 +23,11 @@ LFPy_setup <- function(cellname,celltype,path,lfpysim,eldistribute,orientation,c
     ##Creating the grid
     eleccoords<-array(0,c(rownb*colnb,3))
     eleccoords[,2]<-rep(seq(xmin,xmax,length.out=rownb),colnb)
+    cat(paste(eleccoords))
     eleccoords[,3]<-rep(seq(ymin,ymax,length.out=colnb),each=rownb)
+    cat(paste(eleccoords))
     eleccoords[,1]<-rep(cellelectrodedist,rownb*colnb)
+    cat(paste(eleccoords))
     
     if (eldistribute==1){
         if (orientation==1){
@@ -106,7 +109,7 @@ LFPy_setup <- function(cellname,celltype,path,lfpysim,eldistribute,orientation,c
         eleccoords<-as.matrix(read.table(paste0(main.folder,'/simulation/ElcoordsDomi14.txt')))
     }
     if (celltype==1){
-        morpho.location<-paste(main.folder,'/simulation/morphology/ballstick.hoc',sep='')
+        morpho.location<-paste(main.folder,'/simulation/morphology/ballstick.swc',sep='')
     }
     if (celltype==2){
         morpho.location<-paste(main.folder,'/simulation/morphology/villa.swc',sep='')
@@ -151,6 +154,11 @@ LFPy_setup <- function(cellname,celltype,path,lfpysim,eldistribute,orientation,c
     if (lfpysim==5){
         simName<-'LFP_calc_constInj.py'#_osc_sine.py'
     }
+    if (lfpysim==6){
+      simName<-'LFP_no_sim.py'#_osc_sine.py'
+      
+    }
+   
 #####################################
     ##active channel description
     active.location<-paste(main.folder,'/simulation/morphology/active.hoc',sep='')
@@ -158,7 +166,7 @@ LFPy_setup <- function(cellname,celltype,path,lfpysim,eldistribute,orientation,c
     
     simulation.location<-paste(main.folder,"/",path,sep='')
     cell.name<-cellname
-    cat(cell.name)
+   
     dir.create(paste(simulation.location,'/',cell.name,sep=''))
 ##############x
     
@@ -202,7 +210,6 @@ LFPy_setup <- function(cellname,celltype,path,lfpysim,eldistribute,orientation,c
 ###########
     write.table(cell.name,paste(simulation.location,'/cellname',sep=''),col.names=FALSE, row.names=FALSE,quote=FALSE)
     ##return(list(elec=eleccoords,alak))
-    cat(simName)
     return(list(simName1=simName,simulation.location=simulation.location,cellname=cellname,celltype=celltype))
 }
 
@@ -222,48 +229,38 @@ LFPy_run<-function(cellname,celltype,path,lfpysim,eldistribute,orientation,colnb
     simulation.location<-simName2Be$simulation.location
     cell.name.name <-cellname
     outputfilename<-paste(simulation.location,'/',cell.name.name,sep='')
-    cat(outputfilename)
-    setwd(simulation.location)
-    cat(paste("\n", getwd()))
-    cat(simName2Be$simName1)
+
     ##system(paste0('cd ', svalue(main.folder.n), '/simulation'))
     ##cat(paste('cd', svalue(main.folder.n)))
     ##export PYTHONPATH=/usr/local/nrn/lib/python
+    setwd(simulation.location)
+    
     system(paste0('python ', simName2Be$simName1))
     ##cat('This simulation is testing the Y shaped neuron only!!! ')
     ##system('ipython LFP_Y_symmetric.py')
     
-    cat('LFPy simulation ready! ')
-    
-    setwd(outputfilename)
-    ##Writing out the KCSD details
-    if(celltype == 1){
-        source(paste0(main.folder.n,"/utils/sCSDFun.R"))
-        ##system(paste0('ipython ', simulation.location,'/', 'dori1DkCSD.py'))
-    }## else system(paste0('ipython ', simulation.location,'/', 'KCSD_Chat/kCSD_dori.py'))
-    ## 
-    ##Calculate the connections
-    
-    ##Reading in the segment information from LFPy
-    seg.cord<- matrix(as.matrix(read.table('coordsmid_x_y_z')),ncol=3)
+    cat('LFPy simulation ready!\n')
+    seg.cord<- matrix(as.matrix(read.table(paste(outputfilename,'coordsmid_x_y_z',sep='/'))),ncol=3)
     ##seg.kord<-seg.cord
-    seg.start<-round(matrix(as.numeric(as.matrix(read.table('coordsstart_x_y_z'))),ncol=3),3)
-    seg.end<-round(matrix(as.numeric(as.matrix(read.table('coordsend_x_y_z'))),ncol=3),3)
-    seg.diam<-as.numeric(as.matrix(read.table('segdiam_x_y_z')))
+    seg.start<-round(matrix(as.numeric(as.matrix(read.table(paste(outputfilename,'coordsstart_x_y_z',sep='/')))),ncol=3),3)
+    seg.end<-round(matrix(as.numeric(as.matrix(read.table(paste(outputfilename,'coordsend_x_y_z',sep='/')))),ncol=3),3)
+    seg.diam<-as.numeric(as.matrix(read.table(paste(outputfilename,'segdiam_x_y_z',sep='/'))))
+    write.table(seg.cord, file=paste(outputfilename,"segcoordinates.txt",sep='/'),append=FALSE)
+    
     seg.db<-length(seg.diam)
     connections.1<-numeric()
     connections.2<-numeric()
     for (i in 1:(seg.db)){
-        ##connected<-which(seg.start[i,1]==seg.end[,1] & seg.start[i,3]==seg.end[,3] & seg.start[i,2]==seg.end[,2],arr.ind=TRUE)
-        connected<-which((seg.start[i,1]==seg.start[,1] & seg.start[i,3]==seg.start[,3] & seg.start[i,2]==seg.start[,2]) | (seg.start[i,1]==seg.end[,1] & seg.start[i,3]==seg.end[,3] & seg.start[i,2]==seg.end[,2]))
-        
-        melyik<-rep(i,length(connected))
-        mihez<-connected
-        if(connected[1]!=melyik[1]){
-            connections.1<-c(connections.1,melyik )
-            connections.2<-c(connections.2,mihez )
-            ##cat(paste( i, 'is connected to ', connected,'\n'))
-        }
+      ##connected<-which(seg.start[i,1]==seg.end[,1] & seg.start[i,3]==seg.end[,3] & seg.start[i,2]==seg.end[,2],arr.ind=TRUE)
+      connected<-which((seg.start[i,1]==seg.start[,1] & seg.start[i,3]==seg.start[,3] & seg.start[i,2]==seg.start[,2]) | (seg.start[i,1]==seg.end[,1] & seg.start[i,3]==seg.end[,3] & seg.start[i,2]==seg.end[,2]))
+      
+      melyik<-rep(i,length(connected))
+      mihez<-connected
+      if(connected[1]!=melyik[1]){
+        connections.1<-c(connections.1,melyik )
+        connections.2<-c(connections.2,mihez )
+        ##cat(paste( i, 'is connected to ', connected,'\n'))
+      }
     }
     ##calculating the connections from the coordinates of the segments
     conn.matr<-array(0,c(length(connections.1),2))
@@ -271,9 +268,27 @@ LFPy_run<-function(cellname,celltype,path,lfpysim,eldistribute,orientation,colnb
     conn.matr[,2]<-connections.2
     conn.matr<-conn.matr[-which(conn.matr[,1]==conn.matr[,2]),]
     ##writing out the connections between the segments
-    write.table(conn.matr, file="connections.txt",append=FALSE)
+    write.table(conn.matr, file=paste(outputfilename,"connections.txt",sep='/'),append=FALSE)
     ##write the coordinates in a different format
-    write.table(seg.cord, file="segcoordinates.txt",append=FALSE)
+    
+    #setwd(outputfilename)
+    ##Writing out the KCSD details
+    if (celltype==1 && lfpysim==6){
+  
+      source(paste0(main.folder.n,'/utils/BS_cos_simulation.R'))
+      simulate(outputfilename)
+    }
+    if(celltype == 1){
+      
+        source(paste0(main.folder.n,"/utils/sCSDFun.R"))
+        ##system(paste0('ipython ', simulation.location,'/', 'dori1DkCSD.py'))
+    }## else system(paste0('ipython ', simulation.location,'/', 'KCSD_Chat/kCSD_dori.py'))
+    ## 
+    ##Calculate the connections
+    
+    ##Reading in the segment information from LFPy
+
+  
     cat('Connection estimations ready!')
     
     
