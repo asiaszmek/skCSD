@@ -23,13 +23,11 @@ Pstart<-matrix(as.numeric(as.matrix(read.table('coordsstart_x_y_z'))),ncol=3)
 Pend<-matrix(as.numeric(as.matrix(read.table('coordsend_x_y_z'))),ncol=3)
 Pmid<-matrix(as.numeric(as.matrix(read.table('coordsmid_x_y_z'))),ncol=3)
 
- elec<-matrix(as.matrix(read.table('elcoord_x_y_z', colClasses='numeric')),ncol=3)
-membcurr<-as.matrix(read.table("membcurr"))
+elec<-matrix(as.matrix(read.table('elcoord_x_y_z', colClasses='numeric')),ncol=3)
 seg.length<-as.matrix(read.table("seglength"))
-funaramvonal<-function(x) x/seg.length
-memb.currents.line<-array(0, c(dim(membcurr)))
-memb.currents.line<-apply(membcurr,2,funaramvonal) 
+
 LFP<-as.matrix(read.table("myLFP"))
+
 #SegCord<-as.matrix(read.table("segcoordinates.txt"))
 SegNumbers<-1:length(seg.length)
 
@@ -49,6 +47,7 @@ SegCordChoosen[,3]<-seq(range(Pmid[,3])[1],range(Pmid[,3])[2],length.out=dim(ele
 write.table(SegCordChoosen,"sCSDCoord")
 TransMatrix<-sCSDTCalc(elec,SegCordChoosen,4*pi*0.5)
 #sCSD<-solve(TransMatrix)%*%LFP
+cat(paste(LFP))
 sCSDginv<-ginv(TransMatrix)%*%LFP
 write.table(sCSDginv,"sCSDginv")
 #}
