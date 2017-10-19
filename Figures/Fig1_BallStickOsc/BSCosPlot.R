@@ -23,7 +23,7 @@ ElNumb<-c(8,16, 128) #16???
 #ElNumb<-c(10,20,50,100)
 locationsData<-c("BS_d50el8_CosChanging/",  "BS_d50el16_CosChanging/","BS_d50el128_CosChanging/")#paste0("BS_d50el",ElNumb) 
 #locationsKernel<-c(locationsKernel,paste0("Y_el",ElNumb,"_m200_600"))
-locationsKernel<-list()
+locationsKernel<-list("BS_d50el8_CosChanging/skCSDreconstruct",  "BS_d50el16_CosChanging/skCSDreconstruct","BS_d50el128_CosChanging/skCSDreconstruct")
 outname1<-"skCSDreconstruct"
 i <- 1
 for(loc in locationsData){
@@ -82,15 +82,15 @@ for(Dlength in 1:length(locationsKernel)){
   
     coordsMid<-matrix(as.matrix(read.table(paste0(outname,"coordsmid_x_y_z"))),ncol=3)
   
-    ## BesteEmatr<-as.matrix(read.table(paste(inname,"EL1ErrorVarR_SNR0",sep="")))
-    ## CurrMin<- min(BesteEmatr[26:30,])
-    ## IndecesMin<-which(BesteEmatr==CurrMin,arr.ind=TRUE)
-    ## MinErrorR<-c(MinErrorR,R.all[IndecesMin[1]-25])
-    ## MinErrorL<-c(MinErrorL,lambda.all[IndecesMin[2]])
+    BesteEmatr<-as.matrix(read.table(paste(inname,"EL1ErrorVarR_SNR0",sep="")))
+    CurrMin<- min(BesteEmatr[26:30,])
+    IndecesMin<-which(BesteEmatr==CurrMin,arr.ind=TRUE)
+    MinErrorR<-c(MinErrorR,R.all[IndecesMin[1]-25])
+    MinErrorL<-c(MinErrorL,lambda.all[IndecesMin[2]])
   
   
-    ## R2Plot<- MinErrorR[Dlength]
-    ## lambda2Plot<- MinErrorL[Dlength]
+    R2Plot<- MinErrorR[Dlength]
+    lambda2Plot<- MinErrorL[Dlength]
   
   
   
@@ -192,10 +192,10 @@ for(Dlength in 1:length(locationsKernel)){
     
 }
 
-## L1errors<-matrix(L1errors,ncol=Dlength)
+L1errors<-matrix(L1errors,ncol=Dlength)
 
-## matplot(times2Plot/2, L1errors,t="l",ylab="L1 Error",xlab="Spatial frequency",lwd=2)
-## legend("topleft",paste(ElNumb),col=1:3, lty=1:3)
+matplot(times2Plot/2, L1errors,t="l",ylab="L1 Error",xlab="Spatial frequency",lwd=2)
+legend("topleft",paste(ElNumb),col=1:3, lty=1:3)
 ## ## #dev.off()
 ## ## #}
 
