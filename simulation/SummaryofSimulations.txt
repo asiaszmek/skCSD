@@ -1,2 +1,0 @@
-cell_1 Ballstick random 50 x 0 600 0 600 4 1 0.3 1 123456 
-cell_1 Gang_Simple random 50 z -200 600 -200 200 4 4 0.3 1 123456 
