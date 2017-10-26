@@ -4,7 +4,12 @@ import matplotlib.pylab as pl
 import sys
 import os
 import random as random
+os.system('''
+          nrnivmodl
+          ''')
 
+LFPy.cell.neuron.load_mechanisms(".")
+dt = 0.1
 #setting a random seed to get the same result all the time
 np.random.seed(1988)
 #what this program need fro running
@@ -42,21 +47,6 @@ f1.close()
 ######################x
 #synaptic inputs
 
-def stationary_poisson(nsyn,lambd,tstart,tstop):
-    ''' Generates nsyn stationary possion processes with rate lambda between tstart and tstop'''
-    interval_s = (tstop-tstart)*.001
-    spiketimes = []
-    for i in xrange(nsyn):
-        spikecount = np.random.poisson(interval_s*lambd)
-        spikevec = np.empty(spikecount)
-        if spikecount==0:
-            spiketimes.append(spikevec)
-        else:
-            spikevec = tstart + (tstop-tstart)*np.random.random(spikecount)
-            spiketimes.append(np.sort(spikevec)) #sort them too!
-
-    return spiketimes
-
 ###############
 cell_parameters = {         
    
@@ -70,7 +60,7 @@ cell_parameters = {
 	'nsegs_method' :  'fixed_length',
 	'max_nsegs_length':10, 
 #	'lambda_f' : 1000,           # segments are isopotential at this frequency
-    'custom_code'  : [activewhere], # will run this file
+    'custom_code'  : [],#[activewhere], # will run this file
 }
 
 #electrode coordinates
@@ -94,20 +84,6 @@ electrodeParameters = {
      'method' : 'linesource'
 }
    
-
-
-
-
-
-#pointprocess= {
-#        'idx' : 1,
-#        'record_current' : True,
-#        'pptype' : 'IClamp',
-#        'amp' : 0.05,
-#        #'amp' : 0.2,
-#        'dur' : 30,
- #       'delay' : 15
-#    }
 
 
 
@@ -135,102 +111,32 @@ cell = LFPy.Cell(**cell_parameters)
 cell.set_pos(xpos = LFPy.cell.neuron.h.x3d(0) , ypos = LFPy.cell.neuron.h.y3d(0) , zpos = LFPy.cell.neuron.h.z3d(0))
 #cell.set_pos(xpos = xpontok[1], ypos = ypontok[1], zpos = zpontok[1])
 
+frequencies = np.arange(0.5,13,0.5)
+i = 0
+distance = 0
+nseg = cell.get_idx()
+freq_step = sum(cell.length)/len(frequencies)
 
+TimesStim= np.arange(0,cell.tstopms,dt)
 
-#Synaptic inputs
+for j,istim in enumerate(nseg):
+    distance += cell.length[j]
 
-
-	    # Define synapse parameters
-synapse_parameters = {
-      'idx' : cell.get_closest_idx(x=100., y=0., z=500.), #100 0.00 500
-      'e' : 0.,                   # reversal potential
-      'syntype' : 'ExpSyn',       # synapse type
-      #'tau' : 10.,                # syn. time constant
-	'tau' : 2.,
-#      'weight' : .001,            # syn. weight
-      'weight' : .04,            # syn. weight 
-      'record_current' : True,
-}
-
-synapse_parameters2 = {
-  'idx' : cell.get_closest_idx(x=-100., y=0., z=400.), #100 0.00 500
-      'e' : 0.,                   # reversal potential
-      'syntype' : 'ExpSyn',       # synapse type
-      #'tau' : 10.,                # syn. time constant
-	'tau' : 2.,
-#      'weight' : .001,            # syn. weight
-      'weight' : .03,            # syn. weight 
-      'record_current' : True,
-}
-
-
-synapse_parameters3 = {
-      'idx' : cell.get_closest_idx(x=40., y=0., z=200.), #100 0.00 500
-      'e' : 0.,                   # reversal potential
-      'syntype' : 'ExpSyn',       # synapse type
-      #'tau' : 10.,                # syn. time constant
-	'tau' : 2.,
-#      'weight' : .001,            # syn. weight
-      'weight' : .04,            # syn. weight 
-      'record_current' : True,
-}
-
-
-
-############################################x
-# Define synapse parameters
-synapse_parameters_random = {
-    'idx' : 0, # to be set later
-    'e' : 0.,                   # reversal potential
-    'syntype' : 'ExpSyn',       # synapse type
-    'tau' : 2.,                 # syn. time constant
-    'weight' : .01,            # syn. weight
-    'record_current' : True,
-}
-
-#synaptic spike times
-n_pre_syn = 1000
-pre_syn_sptimes = stationary_poisson(nsyn=n_pre_syn, lambd=2, tstart=0, tstop=400)#70)
-
-#assign spike times to different units
-n_synapses = 1000
-
-
-# Create synapse and set time of synaptic input
-pre_syn_pick = np.random.permutation(np.arange(n_pre_syn))[0:n_synapses]
-
-for i_syn in xrange(n_synapses):
-    syn_idx = int(cell.get_rand_idx_area_norm())
-    synapse_parameters_random.update({'idx' : syn_idx})
-    synapse = LFPy.Synapse(cell, **synapse_parameters_random)
-    synapse.set_spike_times(pre_syn_sptimes[pre_syn_pick[i_syn]])
-##############################################################
-
-
-# Create synapse and set time of synaptic input
-#synapse = LFPy.Synapse(cell, **synapse_parameters)
-#synapse2 = LFPy.Synapse(cell, **synapse_parameters2)
-#synapse3 = LFPy.Synapse(cell, **synapse_parameters3)
-#insert_synapses(synapse_parameters_2, **insert_synapses_2)
-#synapse.set_spike_times(np.array([5.,25., 44.]))
-#synapse2.set_spike_times(np.array([15.,20., 40.]))
-#synapse3.set_spike_times(np.array([10.,33.]))
-
-
-TimesStim= np.arange(850)
-
-for istim in xrange(850):
+    if distance>(i+1)*freq_step:
+        i += 1
+    freq = frequencies[i]
     pointprocess= {
-        'idx' : 0,
-#        'record_current' : True,
-        'pptype' : 'IClamp',
-        'amp' :  np.array(3.6*np.sin(2.*3.141*6.5*TimesStim/1000.))[istim], #3.6
-#        #'amp' : 0.2,
-        'dur' : 1.,
-        'delay' : istim,
+        'idx' : istim,
+        'pptype' : 'SinSyn',
+        'pkamp' :  3.6,
+        'freq':freq,
+        'phase':-np.pi/2,
+        'dur':cell.tstopms,
     }
+    
+    
     stimulus = LFPy.StimIntElectrode(cell, **pointprocess)
-
+    
 
 
 
@@ -290,8 +196,8 @@ np.savetxt( 'seglength',cell.length)
 np.savetxt( 'time',cell.tvec)
 
 #lets write to file the simulation locations
-
-np.savetxt( 'synapse_locations',pre_syn_pick)
+f = open('synapse_locations')
+f.close()
 
 
 #elprop=np.hstack((d,electrode.sigma))
@@ -319,4 +225,5 @@ np.savetxt( 'synapse_locations',pre_syn_pick)
 #		yc.append(h.y3d(i))
 #		zc.append(h.z3d(i))	
 #	np.savetxt(outname,' + '/segcoords/segcord'+str(b),np.hstack((xc,yc,zc)))
+
 
