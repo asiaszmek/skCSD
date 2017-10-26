@@ -1,12 +1,13 @@
 #source(paste0(ScriptLocation,"alprogik/KernSmoothDistance.R"))
 
-KernSmoothDistance<-function(BandWidth,inname, outname, outname1, Name){
-membcurr<-as.matrix(read.table(paste(outname,"/membcurr",sep="")))
-seg.length<-as.matrix(read.table(paste(inname,"seglength",sep="")))
+KernSmoothDistance<-function(BandWidth,inname, outname, Name){
+membcurr<-as.matrix(read.table(paste(outname,"membcurr",sep="/")))
+seg.length<-as.matrix(read.table(paste(outname,"seglength",sep="/")))
 funaramvonal<-function(x) x/seg.length
 memb.currents.line<-array(0, c(dim(membcurr)))
+
 memb.currents.line<-apply(membcurr,2,funaramvonal)
-morpho<-as.matrix(read.table(paste0(inname,'segcoordinates.txt')))
+morpho<-as.matrix(read.table(paste(outname,'segcoordinates.txt',sep='/')))
 DistMorpho<-as.matrix(dist(morpho))
 #image(as.matrix(DistMorpho))
 SmoothedCurr<-array(0,dim(memb.currents.line))
@@ -18,7 +19,7 @@ for(i in 1:length(seg.length)) SmoothingMatrix[i,]<-exp(-DistMorpho[i,]^2/2/Band
 SmoothingMatrix<-SmoothingMatrix/colSums(SmoothingMatrix)
 SmoothedCurr<-SmoothingMatrix%*%memb.currents.line
 
-write.table(SmoothedCurr, paste0(inname,outname1,"/",Name))
+write.table(SmoothedCurr, paste0(inname,"/",Name))
 return(SmoothedCurr)
 }
 #############################
