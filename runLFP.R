@@ -23,12 +23,9 @@ LFPy_setup <- function(cellname,celltype,path,lfpysim,eldistribute,orientation,c
     ##Creating the grid
     eleccoords<-array(0,c(rownb*colnb,3))
     eleccoords[,2]<-rep(seq(xmin,xmax,length.out=rownb),colnb)
-    cat(paste(eleccoords))
     eleccoords[,3]<-rep(seq(ymin,ymax,length.out=colnb),each=rownb)
-    cat(paste(eleccoords))
     eleccoords[,1]<-rep(cellelectrodedist,rownb*colnb)
-    cat(paste(eleccoords))
-    
+
     if (eldistribute==1){
         if (orientation==1){
             eleccoords[,2]<-rep(seq(xmin,xmax,length.out=rownb),colnb)

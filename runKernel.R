@@ -26,7 +26,8 @@ kernel_calculate <- function(simulation.location.name,
     M<-basis.numb.g
         
     DirData<-where2save
-    setwd(DirData)
+    if (getwd() != DirData)
+      setwd(DirData)
 
     ##reading in electrode coordinates
     
