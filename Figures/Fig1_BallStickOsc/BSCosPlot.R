@@ -13,7 +13,7 @@ R.all<-2^(3:7) #c(8,16,128)#
 dir = getwd()
 
 ScriptLocation<-"skCSD_scripts/alprogik"
-cat(paste0(ScriptLocation,"/Colors_BlueRed.R","\n"))
+
 source(paste0(ScriptLocation,"/Colors_BlueRed.R"))
 
 
@@ -24,12 +24,7 @@ ElNumb<-c(8,16, 128) #16???
 locationsData<-c("BS_d50el8_CosChanging/",  "BS_d50el16_CosChanging/","BS_d50el128_CosChanging/")#paste0("BS_d50el",ElNumb) 
 #locationsKernel<-c(locationsKernel,paste0("Y_el",ElNumb,"_m200_600"))
 locationsKernel<-list("BS_d50el8_CosChanging/skCSDreconstruct",  "BS_d50el16_CosChanging/skCSDreconstruct","BS_d50el128_CosChanging/skCSDreconstruct")
-outname1<-"skCSDreconstruct"
-i <- 1
-for(loc in locationsData){
-    locationsKernel[[i]] <- paste(loc,outname1,sep="")
-    i = i+1
-}
+
 #outname1<-"/kernelOut_poli_CP3"
 #lapply(paste0(SimPath,locationsData, outname1), dir.create)
 
@@ -66,13 +61,15 @@ MinErrorL<-numeric()
 
 
 for(Dlength in 1:length(locationsKernel)){
+ 
     inname<-paste0(SimPath, locationsKernel[Dlength],"/")
     outname<-paste0(SimPath, locationsData[Dlength])
+
     OrigCurr<-as.matrix(read.table(paste(outname,"membcurr",sep="")))
     SameplaceAll<-readLines(paste0(inname,"sameplace.txt"))
-    coord<-as.matrix(read.table((paste0(outname,"coordsmid_x_y_z"))))[106:156]
-    seg.nb<-length(as.vector(read.table(paste(outname,'segdiam_x_y_z',sep=''))))
-    cat(coord)
+    coord<-as.matrix(read.table((paste0(outname,"coordsmid_x_y_z"))))[105:156]
+ 
+    seg.nb<-max(as.matrix(read.table(paste(inname,'/connection_touched_once',sep=''))))
     seg.length<-as.matrix(read.table(paste(outname,"seglength",sep="")))
     funaramvonal<-function(x) x/seg.length
     memb.currents.line1<-array(0, c(dim(OrigCurr)))
@@ -93,12 +90,11 @@ for(Dlength in 1:length(locationsKernel)){
     lambda2Plot<- MinErrorL[Dlength]
   
   
-  
+    coord[1] = -7
     ## ##Select just few Rs and Ms for plotting
-    R.allplot<-seq(5,130,25)
+    R.allplot<-R2Plot
     M<-512
-    lambda.allplot<-c("1e-05","1e-04","0.001","0.01","0.1" )
-  
+    lambda.allplot<-lambda2Plot
   
   
     if(Dlength==1){
@@ -107,15 +103,14 @@ for(Dlength in 1:length(locationsKernel)){
         
         SegNb<-dim(memb.currents.line1)[1]
         
-        ##matplot(sort(coord),memb.currents.line1[c(2,1,3:52),times2Plot],t="l",ylim=c(-0.13,0.13),xaxt="n",main="Ground Truth",ylab="CSD (nA/um)")
+        #matplot(sort(coord),memb.currents.line1[c(2,1,3:52),times2Plot],t="l",ylim=c(-0.13,0.13),xaxt="n",main="Ground Truth",ylab="CSD (nA/um)")
     
         col2<-ColoursDori(memb.currents.line1*1.1)[[1]]
         ExtVal<-range(memb.currents.line1*1.1)[2] #ColoursDori(memb.currents.line1)[[2]]
         par(mar=c(1,0.1,0.1,0.1))
         SegNb<-dim(memb.currents.line1)[1]
-        cat(length(times2Plot/2))
-        cat(length(coord))
-        image(times2Plot/2, sort(coord),t(memb.currents.line1[c(2,1,4:52),times2Plot]),col=col2,zlim=c(-ExtVal,ExtVal),xaxt="n", ylab="z (um)")
+
+        image(times2Plot/2, sort(coord),t(memb.currents.line1[c(2,1,3:52),times2Plot]),col=col2,zlim=c(-ExtVal,ExtVal),xaxt="n", ylab="z (um)")
         mtext("Ground Truth",3)
         mtext("z (um)",side=2,line=2.5)
   #  axis(1,round(seq(0,max(times2Plot)-10,,5)),las=2)
@@ -129,7 +124,7 @@ for(Dlength in 1:length(locationsKernel)){
   
   
     par(mfg=c(Dlength+1,1))
-  
+   
     skCSD.all<-array(0,c(seg.nb, length(times2Plot)))
     ##for(m in 1:length(lambda.all)){
     ## for(r in 1:length(R.all)){
@@ -139,9 +134,13 @@ for(Dlength in 1:length(locationsKernel)){
     R<-R.allplot[r]
     ##Reading in the LFP and adding noise
     ##Ktilda_M512_R55lambda1e-04
-    currName<-paste0(outname,outname1,"/skCSDall_M",M,"_R",R,"lambda",Lambda)
-    cat(paste(currName,'\n'))
+    currName<-paste0(inname,"skCSDall_M",M,"_R",R,"lambda",Lambda)
+    cat(currName)
+    cat('\n')
+    cat(getwd())
+    cat('\n')
     if(file.exists(currName)) {
+      cat('skcsdALL')
         skCSD.all.part<-as.matrix(read.table(currName)) 
     
     
@@ -161,10 +160,12 @@ for(Dlength in 1:length(locationsKernel)){
   
       
     L1errors<-c(L1errors,L1Error(skCSD.all, memb.currents.line1[,times2Plot])$lerrorInTime)
-    cat(paste(L1errors))
+ 
     par(mar=c(1,0.1,1,0.1))
     if(Dlength!=3) #matplot(coordsMid[c(2,1,3:52),3],skCSD.all[c(2,1,3:52),times2Plot],t="l",ylim=c(-0.13,0.13),xaxt="n",main=paste(ElNumb[Dlength], "Electrodes"),ylab="CSD (nA/um)")
     {
+        cat('tskCSD')
+      cat(t(skCSD.all[c(2,1,3:52),]))
         ##col2<-ColoursDori(memb.currents.line1)[[1]]
         ##ExtVal<-0.11 #ColoursDori(memb.currents.line1)[[2]]
         par(mar=c(1,0.1,0.1,0.1))
@@ -191,11 +192,16 @@ for(Dlength in 1:length(locationsKernel)){
     }
     
 }
-
-L1errors<-matrix(L1errors,ncol=Dlength)
-
-matplot(times2Plot/2, L1errors,t="l",ylab="L1 Error",xlab="Spatial frequency",lwd=2)
-legend("topleft",paste(ElNumb),col=1:3, lty=1:3)
+# cat(paste(length(L1errors)))
+# cat('\n')
+# L1errors<-matrix(L1errors,ncol=Dlength)
+# 
+# cat(paste(length(times2Plot/2)))
+# cat('\n')
+# cat(paste(length(L1errors)))
+# cat('\n')
+# matplot(times2Plot/2, L1errors,t="l",ylab="L1 Error",xlab="Spatial frequency",lwd=2)
+# legend("topleft",paste(ElNumb),col=1:3, lty=1:3)
 ## ## #dev.off()
 ## ## #}
 

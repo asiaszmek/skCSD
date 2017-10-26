@@ -103,8 +103,7 @@ cross.valid<-function(fi, transfermatrix, compare2, ElCoords){
   cross.WhereisBigDiff<-array(0,c(N,t))
   fi_star<-array(0,c(N,t))
   cat(range(fi))
-  cat("\n")
-  
+
   
   
   for(electrode in 1:N){
